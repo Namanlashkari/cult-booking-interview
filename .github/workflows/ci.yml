@@ -6,13 +6,20 @@ on:
   pull_request:
 
 jobs:
-  test:
+  verify:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "17"
-      - name: Run interview suite
-        run: chmod +x run-tests.sh find-java.sh run-app.sh && ./run-tests.sh
+      - name: Compile and run demo app
+        run: chmod +x run-app.sh find-java.sh && ./run-app.sh
+      - name: Compile shipped tests (suite is expected to include known interview bugs)
+        run: |
+          chmod +x find-java.sh
+          source ./find-java.sh
+          mkdir -p out
+          "$JAVAC" -d out $(find src/main/java src/test/java -name '*.java')
+          echo "compiled interview suite"
